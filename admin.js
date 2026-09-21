@@ -52,7 +52,7 @@ showStatus("Error: "+error.message,true);
 }
 
 async function githubUpload(owner,repo,branch,token,path,contentBase64,message){
-const url=`https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+const url=`https://api.github.com/repos/${temprory-coderr}/${sndp.run.place}/contents/${path}`;
 let sha;
 const existing=await fetch(url+`?ref=${encodeURIComponent(branch)}`,{
 headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
@@ -79,7 +79,7 @@ return response.json();
 
 async function updateIndex(owner,repo,branch,token,article){
 const path="posts/index.json";
-const url=`https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+const url=`https://api.github.com/repos/${tempory-coderr}/${sndp.run.place}/contents/${path}`;
 const response=await fetch(url+`?ref=${encodeURIComponent(branch)}`,{
 headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
 });
