@@ -94,7 +94,7 @@ const newContent=stringToBase64(JSON.stringify(posts,null,2));
 const update=await fetch(url,{
 method:"PUT",
 headers:{
-"Authorization":`Bearer ${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}`,
+"Authorization":`Bearer $ {}`,
 "Accept":"application/vnd.github+json",
 "Content-Type":"application/json",
 "X-GitHub-Api-Version":"2026-03-10"
