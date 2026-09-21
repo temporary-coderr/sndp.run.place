@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+<div class="container nav">
+<a href="index.html" class="logo">SND P</a>
+<nav><a href="index.html">View Site</a></nav>
+</div>
+</header>
+<main class="container admin">
+<div class="admin-box">
+<h1>Blog Admin</h1>
+<p>Publish articles directly to GitHub.</p>
+<h3>GitHub Settings</h3>
+<label>GitHub Username</label>
+<input id="githubOwner" value="temporary-coderr">
+<label>Repository</label>
+<input id="githubRepo" value="sndp.run.place">
+<label>Branch</label>
+<input id="githubBranch" value="main">
+<label>GitHub Personal Access Token</label>
+<input id="githubToken" type="password" placeholder="github_pat_..." autocomplete="off">
+<p><small>Your token is not stored by this page.</small></p>
+<hr>
+<h3>Article</h3>
+<label>Title</label>
+<input id="title" placeholder="Rebirth: The Mystery of Life After Death">
+<label>Category</label>
+<select id="category">
+<option>Knowledge</option><option>Technology</option><option>Science</option>
+<option>History</option><option>AI</option><option>India</option><option>Other</option>
+</select>
+<label>Description</label>
+<input id="description" placeholder="Short description of the article">
+<label>Featured Image</label>
+<input id="image" type="file" accept="image/png,image/jpeg,image/webp">
+<label>Article</label>
+<textarea id="content" placeholder="# Rebirth
+
+What happens after we die?
+
+Write your article here...
+
+## What Is Rebirth?
+
+..."></textarea>
+<button id="publish">Publish Article</button>
+<div id="status" class="status hidden"></div>
+</div>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>
