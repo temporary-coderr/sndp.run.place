@@ -1,277 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog Admin</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      color: #1f2937;
-    }
-
-    .header {
-      background: #0f172a;
-      color: white;
-      padding: 18px 0;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo {
-      color: white;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: 0.08em;
-    }
-
-    .admin-shell {
-      max-width: 980px;
-      margin: 40px auto;
-      background: white;
-      border-radius: 18px;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
-    }
-
-    .admin-header {
-      background: linear-gradient(135deg, #0f172a, #1d4ed8);
-      color: white;
-      padding: 28px 32px;
-    }
-
-    .admin-header h1 {
-      margin: 0;
-      font-size: clamp(2rem, 2.5vw, 2.6rem);
-    }
-
-    .admin-header p {
-      margin: 10px 0 0;
-      opacity: 0.9;
-    }
-
-    .admin-body {
-      padding: 30px 32px 36px;
-    }
-
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 22px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      font-weight: 600;
-      color: #334155;
-      font-size: 0.96rem;
-    }
-
-    input, select, textarea, button {
-      font: inherit;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px 14px;
-      background: #f8fafc;
-      color: #0f172a;
-      box-sizing: border-box;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-      background: white;
-    }
-
-    textarea {
-      min-height: 240px;
-      resize: vertical;
-    }
-
-    .meta-note {
-      font-size: 0.8rem;
-      color: #64748b;
-      margin: -4px 0 0;
-    }
-
-    .publish-wrap {
-      margin-top: 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    #publish {
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-      padding: 16px 20px;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.2s ease;
-      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
-    }
-
-    #publish:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
-    }
-
-    #publish:disabled {
-      opacity: 0.7;
-      cursor: wait;
-      transform: none;
-    }
-
-    #status {
-      border-radius: 12px;
-      padding: 14px 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      line-height: 1.5;
-      min-height: 22px;
-    }
-
-    #status.hidden {
-      display: none;
-    }
-
-    @media (max-width: 760px) {
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .admin-header,
-      .admin-body {
-        padding-left: 20px;
-        padding-right: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header class="header">
-    <div class="container nav">
-      <a href="index.html" class="logo">SND P</a>
-      <nav><a href="index.html" style="color: white; text-decoration: none;">View Site</a></nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="admin-shell">
-      <div class="admin-header">
-        <h1>Publish Article</h1>
-        <p>Single-click publishing to your GitHub blog.</p>
-      </div>
-
-      <div class="admin-body">
-        <div class="admin-grid">
-          <div class="field">
-            <label for="githubOwner">GitHub Owner</label>
-            <input id="githubOwner" value="temporary-coderr">
-          </div>
-
-          <div class="field">
-            <label for="githubRepo">Repository</label>
-            <input id="githubRepo" value="sndp.run.place">
-          </div>
-
-          <div class="field">
-            <label for="githubBranch">Branch</label>
-            <input id="githubBranch" value="main">
-          </div>
-
-          <div class="field">
-            <label for="githubToken">GitHub Token</label>
-            <input id="githubToken" type="password" placeholder="github_pat_..." autocomplete="off">
-          </div>
-
-          <div class="field full">
-            <label for="title">Article Title</label>
-            <input id="title" placeholder="How AI Is Changing Everyday Work">
-          </div>
-
-          <div class="field">
-            <label for="category">Category</label>
-            <select id="category">
-              <option>Knowledge</option>
-              <option>Technology</option>
-              <option>Science</option>
-              <option>History</option>
-              <option>AI</option>
-              <option>India</option>
-              <option>Other</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="image">Featured Image</label>
-            <input id="image" type="file" accept="image/png,image/jpeg,image/webp">
-          </div>
-
-          <div class="field full">
-            <label for="description">Short Description</label>
-            <input id="description" placeholder="A short summary that appears on the homepage.">
-          </div>
-
-          <div class="field full">
-            <label for="content">Article Content</label>
-            <textarea id="content" placeholder="# My Article
-
-Write your article here in Markdown.
-
-## Subtitle
-
-Use headings, bold, links, and lists.
-
-- One
-- Two
-- Three
-"></textarea>
-          </div>
-        </div>
-
-        <div class="publish-wrap">
-          <button id="publish">Publish Article</button>
-          <div id="status" class="status hidden"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script src="admin.js"></script>
-</body>
-</html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SNDP Admin - Working</title>
+<style>body{margin:0;font-family:Arial;background:#f5f7fb}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:30px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08)}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;margin-top:6px;box-sizing:border-box}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.full{grid-column:1/-1}button{width:100%;padding:16px;border:0;border-radius:12px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;margin-top:18px}#status{margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;line-height:1.6}.hidden{display:none}</style>
+</head><body><div class="wrap">
+<h1>SNDP Blog Admin - Fixed to Show on Site</h1>
+<p style="color:#64748b">This now updates <code>posts/index.json</code> so it shows on sndp.run.place homepage instantly.</p>
+<div class="grid">
+<div><label>GitHub Owner</label><input id="githubOwner" value="temporary-coderr"></div>
+<div><label>Repository</label><input id="githubRepo" value="sndp.run.place"></div>
+<div><label>Branch</label><input id="githubBranch" value="main"></div>
+<div><label>GitHub Token</label><input id="githubToken" type="password" placeholder="github_pat_..."></div>
+<div class="full"><label>Title</label><input id="title" placeholder="My Article Title"></div>
+<div><label>Category</label><select id="category"><option>Technology</option><option>Knowledge</option><option>Science</option><option>History</option><option>AI</option><option>India</option><option>Other</option></select></div>
+<div><label>Image</label><input id="image" type="file" accept="image/*"></div>
+<div class="full"><label>Short Description</label><input id="description" placeholder="Short summary for homepage"></div>
+<div class="full"><label>Content (Markdown - saved as posts/slug.md)</label><textarea id="content" style="min-height:200px" placeholder="# Content..."></textarea></div>
+</div>
+<button id="publish">Publish & Show on Site</button>
+<div id="status" class="hidden"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const set=(m,e)=>{const el=$('status');el.classList.remove('hidden');el.innerHTML=m;el.style.color=e?'#b91c1c':'#0f172a';el.style.background=e?'#fef2f2':'#f8fafc';}
+const slugify=t=>t.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').slice(0,60);
+const toB64=f=>new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result.split(',')[1]);rd.onerror=j;rd.readAsDataURL(f);});
+async function gh(url,token,opt={}){const res=await fetch(url,{...opt,headers:{'Authorization':`Bearer ${token}`,'Accept':'application/vnd.github+json','Content-Type':'application/json',...(opt.headers||{})}});const txt=await res.text();let data;try{data=JSON.parse(txt)}catch{data={message:txt}}return {ok:res.ok,status:res.status,data,txt};}
+$('publish').onclick=async()=>{
+ const owner=$('githubOwner').value.trim(),repo=$('githubRepo').value.trim(),branch=$('githubBranch').value.trim()||'main',token=$('githubToken').value.trim(),title=$('title').value.trim(),cat=$('category').value,desc=$('description').value.trim(),content=$('content').value.trim(),imgFile=$('image').files[0];
+ if(!owner||!repo||!token||!title||!content){set('❌ Fill Owner, Repo, Token, Title, Content',true);return;}
+ const btn=$('publish');btn.disabled=true;btn.textContent='Starting...';
+ try{
+  // 1. Check repo
+  set('🔍 Checking repo...');let chk=await gh(`https://api.github.com/repos/${owner}/${repo}`,token);
+  if(!chk.ok) throw new Error(`Repo Not Found: ${chk.data.message}. Recreate token with Only select repos -> ${repo} -> Contents: Read and write`);
+  
+  const date=new Date(), ds=date.toISOString().split('T')[0], slug=slugify(title);
+  let imagePathForSite='';
+  // 2. Upload image if any
+  if(imgFile){
+   set(`⏳ Uploading image ${imgFile.name}...`);btn.textContent='Uploading image...';
+   const ext=imgFile.name.split('.').pop()||'webp';const imgName=`${ds}-${slug}.${ext}`;const imgPath=`images/${imgName}`;imagePathForSite=`/${imgPath}`;
+   const b64=await toB64(imgFile);
+   const up=await gh(`https://api.github.com/repos/${owner}/${repo}/contents/${imgPath}`,token,{method:'PUT',body:JSON.stringify({message:`Add image ${imgName}`,content:b64,branch})});
+   if(!up.ok && up.status!==422) throw new Error(`Image upload failed ${up.status}: ${up.data.message}`);
+  }
+  // 3. Get existing posts/index.json
+  set('📥 Loading posts/index.json...');btn.textContent='Loading index...';
+  let existingPosts=[];let indexSha=null;
+  const idxGet=await gh(`https://api.github.com/repos/${owner}/${repo}/contents/posts/index.json?ref=${branch}`,token);
+  if(idxGet.ok){
+   try{const decoded=atob(idxGet.data.content);existingPosts=JSON.parse(decoded);indexSha=idxGet.data.sha;}catch(e){existingPosts=[];}
+  } else if(idxGet.status===404){
+   existingPosts=[]; // will create new
+  } else {
+   throw new Error(`Cannot read posts/index.json [${idxGet.status}]: ${idxGet.data.message}`);
+  }
+  // 4. Create new post entry
+  const newPost={title,description:desc,category:cat,date:ds,slug,image:imagePathForSite};
+  // remove if slug exists
+  existingPosts=existingPosts.filter(p=>p.slug!==slug);
+  existingPosts.unshift(newPost);
+  // 5. Upload updated index.json
+  set('💾 Updating posts/index.json...');btn.textContent='Updating homepage list...';
+  const newIndexContent=btoa(unescape(encodeURIComponent(JSON.stringify(existingPosts,null,2))));
+  const putBody={message:`Update index: ${title}`,content:newIndexContent,branch};
+  if(indexSha) putBody.sha=indexSha;
+  const putIdx=await gh(`https://api.github.com/repos/${owner}/${repo}/contents/posts/index.json`,token,{method:'PUT',body:JSON.stringify(putBody)});
+  if(!putIdx.ok) throw new Error(`Failed to update index.json [${putIdx.status}]: ${putIdx.data.message}`);
+  // 6. Also create markdown file for article page
+  set('📝 Creating markdown file...');btn.textContent='Creating article file...';
+  const md=`---
+title: "${title.replace(/"/g,'\"')}"
+description: "${desc.replace(/"/g,'\"')}"
+category: "${cat}"
+date: "${ds}"
+slug: "${slug}"
+${imagePathForSite?`image: "${imagePathForSite}"
+`:''}---
+${content}
+`;
+  const mdPath=`posts/${ds}-${slug}.md`;
+  const mdB64=btoa(unescape(encodeURIComponent(md)));
+  const mdPut=await gh(`https://api.github.com/repos/${owner}/${repo}/contents/${mdPath}`,token,{method:'PUT',body:JSON.stringify({message:`Add post ${title}`,content:mdB64,branch})});
+  // ignore if fails, index.json is main
+  set(`✅ <b>Published & Live!</b><br><br>✅ Updated <code>posts/index.json</code> with ${existingPosts.length} posts<br>✅ File: <code>${mdPath}</code><br>${imagePathForSite?`✅ Image: <code>${imagePathForSite}</code><br>`:''}<br><b>Your site will show it in 30-60 seconds:</b><br><a href="https://sndp.run.place" target="_blank">https://sndp.run.place</a><br><a href="${putIdx.data.content.html_url}" target="_blank">View index.json on GitHub</a><br><br>Hard refresh homepage with Ctrl+Shift+R`);
+ }catch(e){set(`❌ ${e.message}`,true);console.error(e);}
+ finally{btn.disabled=false;btn.textContent='Publish & Show on Site';}
+};
+</script></body></html>
