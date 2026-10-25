@@ -1,222 +1,149 @@
-const publishButton = document.getElementById("publish");
-const statusBox = document.getElementById("status");
 
-if (publishButton) {
-  publishButton.addEventListener("click", publishArticle);
+// SNDP Blog Admin - Publish Logic
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+const publishBtn = $('publish');
+
+function setStatus(msg, isError = false) {
+  statusEl.classList.remove('hidden');
+  statusEl.innerHTML = msg;
+  statusEl.style.borderColor = isError ? '#fecaca' : '#e2e8f0';
+  statusEl.style.background = isError ? '#fef2f2' : '#f8fafc';
+  statusEl.style.color = isError ? '#b91c1c' : '#0f172a';
 }
 
-async function publishArticle() {
-  const owner = document.getElementById("githubOwner").value.trim();
-  const repo = document.getElementById("githubRepo").value.trim();
-  const branch = document.getElementById("githubBranch").value.trim();
-  const token = document.getElementById("githubToken").value.trim();
-  const title = document.getElementById("title").value.trim();
-  const category = document.getElementById("category").value;
-  const description = document.getElementById("description").value.trim();
-  const content = document.getElementById("content").value.trim();
-  const imageInput = document.getElementById("image");
-
-  if (!owner || !repo || !branch || !token || !title || !content) {
-    showStatus("Please fill in all required fields.", true);
-    return;
-  }
-
-  publishButton.disabled = true;
-
-  try {
-    const slug = createSlug(title);
-    if (!slug) throw new Error("The title must contain at least one letter or number.");
-
-    let imageUrl = "";
-    if (imageInput && imageInput.files.length > 0) {
-      showStatus("Uploading image...");
-      const file = imageInput.files[0];
-      const extension = getExtension(file.name);
-      const imagePath = `images/${slug}.${extension}`;
-      await githubUpload(
-        owner,
-        repo,
-        branch,
-        token,
-        imagePath,
-        await fileToBase64(file),
-        `Add image for ${title}`
-      );
-      imageUrl = `https://sndp.run.place/${imagePath}`;
-    }
-
-    const article = {
-      title,
-      slug,
-      category,
-      description,
-      date: new Date().toISOString().split("T")[0],
-      image: imageUrl,
-      content
-    };
-
-    showStatus("Creating article...");
-    await githubUpload(
-      owner,
-      repo,
-      branch,
-      token,
-      `posts/${slug}.json`,
-      stringToBase64(JSON.stringify(article, null, 2)),
-      `Publish article: ${title}`
-    );
-
-    showStatus("Updating article list...");
-    await updateIndex(owner, repo, branch, token, article);
-
-    showStatus(
-      `Article published successfully!<br><br><a href="article.html?slug=${encodeURIComponent(slug)}" target="_blank" rel="noopener">Open article</a>`
-    );
-    document.getElementById("title").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("content").value = "";
-    if (imageInput) imageInput.value = "";
-  } catch (error) {
-    console.error(error);
-    showStatus(`Error: ${escapeHtml(error.message)}`, true);
-  } finally {
-    publishButton.disabled = false;
-  }
-}
-
-async function githubUpload(owner, repo, branch, token, path, contentBase64, message) {
-  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path
-    .split("/")
-    .map(encodeURIComponent)
-    .join("/")}`;
-  let sha;
-
-  const existing = await githubRequest(`${url}?ref=${encodeURIComponent(branch)}`, token);
-  if (existing.ok) sha = (await existing.json()).sha;
-  else if (existing.status !== 404) await throwGithubError(existing, "Could not check the existing file.");
-
-  const body = { message, content: contentBase64, branch };
-  if (sha) body.sha = sha;
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: githubHeaders(token),
-    body: JSON.stringify(body)
-  });
-  if (!response.ok) await throwGithubError(response, "GitHub upload failed.");
-  return response.json();
-}
-
-async function updateIndex(owner, repo, branch, token, article) {
-  const path = "posts/index.json";
-  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`;
-  const response = await githubRequest(`${url}?ref=${encodeURIComponent(branch)}`, token);
-  if (!response.ok) await throwGithubError(response, "Could not read article index.");
-
-  const data = await response.json();
-  let posts;
-  try {
-    posts = JSON.parse(decodeBase64(data.content));
-  } catch {
-    throw new Error("The article index is not valid JSON.");
-  }
-  if (!Array.isArray(posts)) throw new Error("The article index must contain an array.");
-
-  posts = posts.filter(post => post.slug !== article.slug);
-  posts.push(article);
-  posts.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const update = await fetch(url, {
-    method: "PUT",
-    headers: githubHeaders(token),
-    body: JSON.stringify({
-      message: "Update article index",
-      content: stringToBase64(JSON.stringify(posts, null, 2)),
-      sha: data.sha,
-      branch
-    })
-  });
-  if (!update.ok) await throwGithubError(update, "Could not update article index.");
-}
-
-function githubHeaders(token) {
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: "application/vnd.github+json",
-    "Content-Type": "application/json",
-    "X-GitHub-Api-Version": "2022-11-28"
-  };
-}
-
-function githubRequest(url, token) {
-  return fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28"
-    }
-  });
-}
-
-async function throwGithubError(response, fallback) {
-  let message = fallback;
-  try {
-    const error = await response.json();
-    if (error.message) message = error.message;
-  } catch {
-    // Keep the fallback when GitHub does not return JSON.
-  }
-  throw new Error(message);
+function slugify(text) {
+  return text.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 60);
 }
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = () => reject(new Error("Could not read the selected image."));
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-function stringToBase64(text) {
-  const bytes = new TextEncoder().encode(text);
-  let binary = "";
-  bytes.forEach(byte => (binary += String.fromCharCode(byte)));
-  return btoa(binary);
+async function githubPut(owner, repo, path, contentBase64, message, token, branch) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message,
+      content: contentBase64,
+      branch
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `GitHub error ${res.status}`);
+  }
+  return data;
 }
 
-function decodeBase64(base64) {
-  const binary = atob(base64.replace(/\n/g, ""));
-  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+function getStored() {
+  try {
+    return JSON.parse(localStorage.getItem('sndp_admin') || '{}');
+  } catch { return {}; }
 }
 
-function createSlug(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+function saveStored() {
+  localStorage.setItem('sndp_admin', JSON.stringify({
+    owner: $('githubOwner').value.trim(),
+    repo: $('githubRepo').value.trim(),
+    branch: $('githubBranch').value.trim()
+  }));
 }
 
-function getExtension(filename) {
-  const extension = filename.split(".").pop().toLowerCase();
-  return /^[a-z0-9]+$/.test(extension) ? extension : "jpg";
-}
+// Load stored
+const stored = getStored();
+if (stored.owner) $('githubOwner').value = stored.owner;
+if (stored.repo) $('githubRepo').value = stored.repo;
+if (stored.branch) $('githubBranch').value = stored.branch;
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[character]));
-}
+publishBtn.addEventListener('click', async () => {
+  const owner = $('githubOwner').value.trim();
+  const repo = $('githubRepo').value.trim();
+  const branch = $('githubBranch').value.trim() || 'main';
+  const token = $('githubToken').value.trim();
+  const title = $('title').value.trim();
+  const category = $('category').value;
+  const description = $('description').value.trim();
+  const content = $('content').value.trim();
+  const imageFile = $('image').files[0];
 
-function showStatus(message, error = false) {
-  statusBox.classList.remove("hidden");
-  statusBox.innerHTML = message;
-  statusBox.style.color = error ? "#b00020" : "#222";
-}
+  if (!owner || !repo || !token || !title || !content) {
+    setStatus('❌ Fill required: Owner, Repo, Token, Title, Content', true);
+    return;
+  }
+
+  publishBtn.disabled = true;
+  publishBtn.textContent = 'Publishing...';
+  saveStored();
+
+  try {
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0];
+    const slug = slugify(title);
+    let imagePathInRepo = '';
+
+    // 1. Upload image if selected
+    if (imageFile) {
+      setStatus(`⏳ Uploading image ${imageFile.name}...`);
+      const ext = imageFile.name.split('.').pop() || 'webp';
+      const imageName = `${dateStr}-${slug}.${ext}`;
+      imagePathInRepo = `images/${imageName}`;
+      const b64 = await fileToBase64(imageFile);
+      await githubPut(owner, repo, imagePathInRepo, b64, `Add image ${imageName}`, token, branch);
+    }
+
+    // 2. Create article markdown
+    setStatus('⏳ Creating article...');
+    const frontmatter = `---
+title: "${title.replace(/"/g, '\\"')}"
+description: "${description.replace(/"/g, '\\"')}"
+category: "${category}"
+date: "${date.toISOString()}"
+${imagePathInRepo ? `image: "/${imagePathInRepo}"` : ''}
+slug: "${slug}"
+---
+
+${content}
+`;
+
+    const articlePath = `posts/${dateStr}-${slug}.md`;
+    const articleB64 = btoa(unescape(encodeURIComponent(frontmatter)));
+
+    const result = await githubPut(owner, repo, articlePath, articleB64, `Publish: ${title}`, token, branch);
+
+    setStatus(`✅ <b>Published!</b><br>
+      File: <code>${articlePath}</code><br>
+      <a href="${result.content.html_url}" target="_blank">View file on GitHub →</a><br>
+      <a href="https://${owner}.github.io/${repo}/" target="_blank">View live site (after 1-2 min) →</a>
+      ${imagePathInRepo ? `<br>Image: <code>${imagePathInRepo}</code>` : ''}
+    `);
+
+    // Clear content fields
+    // $('title').value = ''; $('description').value=''; $('content').value='';
+
+  } catch (e) {
+    console.error(e);
+    setStatus(`❌ Failed: ${e.message}<br><small>Check token has Contents: Read & write, and repo name is correct.</small>`, true);
+  } finally {
+    publishBtn.disabled = false;
+    publishBtn.textContent = 'Publish Article';
+  }
+});
